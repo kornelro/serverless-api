@@ -1,7 +1,8 @@
 # import logging
-import json
+
 
 import azure.functions as func
+from ..Utils.ReqManager import ReqManager
 from ..Utils.DbManager import DbManager
 from ..Utils.ExceptionWithStatusCode import ExceptionWithStatusCode
 
@@ -9,10 +10,11 @@ from ..Utils.ExceptionWithStatusCode import ExceptionWithStatusCode
 def main(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
+        reqManager = ReqManager()
+        product = reqManager.getProduct(req)
         dbManager = DbManager()
-        products = dbManager.getProducts()
-        products = list(map(lambda product: product.getDict(), products))
-        return func.HttpResponse(json.dumps(products))
+        dbManager.addProduct(product)
+        return func.HttpResponse("Created", status_code=201)
     except ExceptionWithStatusCode as e:
         return func.HttpResponse(str(e), status_code=e.status_code)
     except Exception as e:
