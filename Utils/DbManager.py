@@ -34,7 +34,7 @@ class DbManager():
     ) -> Product:
         with pyodbc.connect(self.conn_string) as conn:
             with conn.cursor() as cursor:
-                cursor.execute(F"SELECT * FROM Products WHERE id={id}")
+                cursor.execute("SELECT * FROM Products WHERE id=?", id)
                 rows = cursor.fetchall()
         if len(rows) == 0:
             raise Exception(F'Product with id {id} not found!')
@@ -56,9 +56,12 @@ class DbManager():
         with pyodbc.connect(self.conn_string) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    F"INSERT INTO Products (name, description, quantity, price) \
-                    VALUES ('{product.name}', '{product.description}', \
-                    {product.quantity}, {product.price});"
+                    """
+                    INSERT INTO Products (name, description, quantity, price)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    product.name, product.description,
+                    product.quantity, product.price
                 )
 
     def updateProduct(
@@ -70,10 +73,12 @@ class DbManager():
         with pyodbc.connect(self.conn_string) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    F"UPDATE Products SET name='{product.name}', \
-                    description='{product.description}', \
-                    quantity={product.quantity}, \
-                    price={product.price} WHERE id={product.id}"
+                    """
+                    UPDATE Products SET name=?, description=?,
+                    quantity=?, price=? WHERE id=?
+                    """,
+                    product.name, product.description,
+                    product.quantity, product.price, product.id
                 )
 
     def deleteProduct(
@@ -82,4 +87,4 @@ class DbManager():
     ) -> None:
         with pyodbc.connect(self.conn_string) as conn:
             with conn.cursor() as cursor:
-                cursor.execute(F"DELETE FROM Products WHERE id={id}")
+                cursor.execute("DELETE FROM Products WHERE id=?", id)
